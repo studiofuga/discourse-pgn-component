@@ -1,0 +1,13 @@
+piece_style:
+  default: merida
+  type: enum
+  choices:
+    - merida
+    - case
+    - wikipedia
+    - alpha
+    - uscf
+    - condal
+    - maya
+    - leipzig
+
