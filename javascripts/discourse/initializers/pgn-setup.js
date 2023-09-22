@@ -63,7 +63,7 @@ function Parser(element) {
     // element.innerHTML = `<div class='pgn-code'>PGNV.${mode}(${id}, {pgn: ${gameClean}, pieceStyle: ${pieceStyle}})</div>`;
     // element.innerHTML = `<div class='pgn-code'>PGNV.pgnView(${id}, {pgn: ${gameClean}, pieceStyle: ${pieceStyle}})</div>`;
 
-    element.innerHTML = `<script type='text/javascript' id='pgn-code-board'>var game='${gameClean}'; PGN.pgnView('board',{pgn: game, pieceStyle: 'merida'});</script><div id="board" style="width: 400px"></div>`;
+    element.innerHTML = `<script type='text/javascript' id='pgn-code-board'>var game='${gameClean}'; PGNV.pgnView('board',{pgn: game, pieceStyle: 'merida'});</script><div id="board" style="width: 400px"></div>`;
 
     /**
     ## example of final string:
