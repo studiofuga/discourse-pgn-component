@@ -101,7 +101,7 @@ function configString (element) {
 
 // ****** //
 
-function parseParameters(element) {
+function parseParameters(element, boardname) {
     //## alternative for default values?
     //const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'merida' };
 
@@ -112,12 +112,17 @@ function parseParameters(element) {
     const gameClean = cleanup_pgnv(game);
 
     // NOTE: create all params with default
-    const id         = (element.dataset.id || 'board');
+    const id         = (element.dataset.id || boardname);
     const pieceStyle = (element.dataset.pieceStyle || 'merida');
+
+    console.log("Attrs: boardname = " + boardname);
+    console.log("Game: " + game);
 
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
-    return {};
+    return {
+      game: game
+    };
 }
 
 function createContainer(elem, boardname) {
@@ -134,6 +139,13 @@ function createContainer(elem, boardname) {
 
 
 function initialize(api) {
+  let _glued = [];
+
+  function cleanUp() {
+    _glued.forEach(g => g.cleanUp());
+    _glued = [];
+  }
+
   const register = getRegister(api);
   function attachWidget(container, attrs) {
     const glue = new WidgetGlue(
@@ -145,7 +157,7 @@ function initialize(api) {
     _glued.push(glue);
   }
 
-  api.decorateCookedElement(($cooked, postWidget) => {
+  api.decorateCooked(($cooked, postWidget) => {
     const nodes = $cooked[0].querySelectorAll(
       "div[data-wrap=discourse-pgn]"
     );
@@ -158,16 +170,20 @@ function initialize(api) {
     };
 
     var wcount = 0;
-    placeholderNodes.forEach((elem, dataId, wcount) => {
-      var boardname = "board-" + id + "-" + count;
+    nodes.forEach((elem, dataId, wcount) => {
+      var boardname = "board-" + dataId + "-" + wcount;
       console.log("BoardName: " + boardname);
       var container = createContainer(elem, boardname);
-      var attrs = parseParameters(elem);
+      var attrs = parseParameters(elem, boardname);
       attrs.boardname = boardname;
       attachWidget(container, attrs);
+
+      wcount = wcount + 1;
     });
 
   }, { id: "discourse-pgn" });
+
+  api.cleanupStream(cleanUp);
 }
 
 export default {
