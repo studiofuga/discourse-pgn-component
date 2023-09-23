@@ -1,30 +1,9 @@
 import { withPluginApi } from "discourse/lib/plugin-api";
-import PGNV from "../lib/dist";
+import I18n from "I18n";
+import { getRegister } from "discourse-common/lib/get-owner";
+import WidgetGlue from "discourse/widgets/glue";
 
 // babel: { compact: true }
-
-function cookPgn(element) {
-    //## alternative for default values?
-    //const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'merida' };
-
-    //## read element dataset
-    const game = element.textContent;
-
-    // new feature!
-    const gameClean = cleanup_pgnv(game);
-
-    // NOTE: create all params with default
-    const id         = (element.dataset.id || 'board');
-    const pieceStyle = (element.dataset.pieceStyle || 'merida');
-
-    var pgnv = new PGNV;
-    var pgnwidget = pgnv.pgnView('board', {
-      pgn: game,
-      pieceStyle: 'merida'
-    });
-
-    element.innerHTML = `<div id="board" style="width: 400px"></div>`;
-}
 
 // Cleanup the content, so it will not have any errors. Known are
 // * line breaks ==> Spaces
@@ -122,12 +101,73 @@ function configString (element) {
 
 // ****** //
 
-function attachPgn(elem, helper) {
-  elem.querySelectorAll("div[data-wrap=discourse-pgn]").forEach(cookPgn);
+function parseParameters(element) {
+    //## alternative for default values?
+    //const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'merida' };
+
+    //## read element dataset
+    const game = element.textContent;
+
+    // new feature!
+    const gameClean = cleanup_pgnv(game);
+
+    // NOTE: create all params with default
+    const id         = (element.dataset.id || 'board');
+    const pieceStyle = (element.dataset.pieceStyle || 'merida');
+
+    // TODO fill attrs with parameters found above.
+    // Use the parseParameters above?
+    return {};
 }
 
+function createContainer(elem, boardname) {
+  elem.innerHTML = "";
+  const placeholder = document.createElement("div");
+  placeholder.id = boardname;
+  elem.appendChild(placeholder);
+
+      console.log("Placeholder: " + placeholder);
+
+  return placeholder;
+  //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
+}
+
+
 function initialize(api) {
-  api.decorateCookedElement(attachPgn, { id: "discourse-pgn" });
+  const register = getRegister(api);
+  function attachWidget(container, attrs) {
+    const glue = new WidgetGlue(
+      "pgnviewer-widget",
+      register,
+      attrs
+    );
+    glue.appendTo(container);
+    _glued.push(glue);
+  }
+
+  api.decorateCookedElement(($cooked, postWidget) => {
+    const nodes = $cooked[0].querySelectorAll(
+      "div[data-wrap=discourse-pgn]"
+    );
+
+
+    var dataId = 0;
+    if (postWidget) {
+      const postAttrs = postWidget.widget.attrs;
+      dataId = postAttrs.id;
+    }
+
+    int wcount = 0;
+    placeholderNodes.forEach((elem, dataId, wcount) => {
+      var boardname = "board-" + id + "-" + count;
+      console.log("BoardName: " + boardname);
+      var container = createContainer(elem, boardname);
+      var attrs = parseParameters(elem);
+      attrs.boardname = boardname;
+      attachWidget(container, attrs);
+    });
+
+  }, { id: "discourse-pgn" });
 }
 
 export default {
