@@ -4,20 +4,24 @@ import { emojiUnescape } from "discourse/lib/text";
 import RawHtml from "discourse/widgets/raw-html";
 import { createWidget } from "discourse/widgets/widget";
 
-import PGNV from "../lib/dist";
+import "../lib/dist";
 
 createWidget("pgnviewer-widget", {
   tagName: "div.pgn",
   buildKey: (attrs) => `dice-result-${attrs.postId}-${attrs.rollId}`,
 
   html(attrs) {
-	console.log("Rendering attrs: " + attrs);
+	console.log("Rendering attrs: ", attrs.boardname, attrs.game );
 
-  	var pgnv = new PGNV;
-    var pgnwidget = pgnv.pgnView('board', {
-      pgn: attrs.game,
+	let game="1. e4 e5";
+    var pgnwidget = PGNV.pgnView(attrs.boardname, {
+      pgn: game,
       pieceStyle: 'merida'
     });
+
+	return [
+        h("div.pgn", { id: attrs.boardname }),
+      ];
 
   	/*
     let errors = attrs.errors;

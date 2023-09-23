@@ -115,13 +115,13 @@ function parseParameters(element, boardname) {
     const id         = (element.dataset.id || boardname);
     const pieceStyle = (element.dataset.pieceStyle || 'merida');
 
-    console.log("Attrs: boardname = " + boardname);
-    console.log("Game: " + game);
+    console.log("Attrs: boardname = ", boardname);
+    console.log("Game: ", gameClean);
 
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
     return {
-      game: game
+      game: gameClean
     };
 }
 
@@ -131,7 +131,7 @@ function createContainer(elem, boardname) {
   placeholder.id = boardname;
   elem.appendChild(placeholder);
 
-      console.log("Placeholder: " + placeholder);
+      console.log("Placeholder: " + placeholder.innerHTML);
 
   return placeholder;
   //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
@@ -171,7 +171,7 @@ function initialize(api) {
 
     var wcount = 0;
     nodes.forEach((elem, dataId, wcount) => {
-      var boardname = "board-" + dataId + "-" + wcount;
+      var boardname = "board-" + dataId ;
       console.log("BoardName: " + boardname);
       var container = createContainer(elem, boardname);
       var attrs = parseParameters(elem, boardname);
