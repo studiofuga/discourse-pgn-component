@@ -1,6 +1,5 @@
-import loadScript from "discourse/lib/load-script";
 import { withPluginApi } from "discourse/lib/plugin-api";
-
+import PGNV from "../lib/dist";
 {/* <script src="../../pgn-viewer/lib/dist.js" type="text/discourse-plugin" version="0.8" ></script> */}
 // babel: { compact: true }
 
@@ -199,8 +198,7 @@ function configString (element) {
 
 // ****** //
 
-async function attachPgn(elem, helper) {
-  await loadScript(settings.theme_uploads_local.pgnviewer_js);
+function attachPgn(elem, helper) {
   elem.querySelectorAll("div[data-wrap=discourse-pgn]").forEach(Parser);
 }
 

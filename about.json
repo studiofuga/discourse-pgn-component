@@ -8,7 +8,6 @@
   "minimum_discourse_version": null,
   "maximum_discourse_version": null,
   "assets": {
-    "pgnviewer_js": "assets/pgnviewer.js"
   },
   "color_schemes": {
   },
