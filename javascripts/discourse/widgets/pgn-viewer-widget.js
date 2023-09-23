@@ -13,9 +13,8 @@ createWidget("pgnviewer-widget", {
   html(attrs) {
 	console.log("Rendering attrs: ", attrs.boardname, attrs.game );
 
-	let game="1. e4 e5";
     var pgnwidget = PGNV.pgnView(attrs.boardname, {
-      pgn: game,
+      pgn: attrs.game,
       pieceStyle: 'merida'
     });
 

@@ -171,10 +171,10 @@ function initialize(api) {
 
     var wcount = 0;
     nodes.forEach((elem, dataId, wcount) => {
+      var attrs = parseParameters(elem, boardname);
       var boardname = "board-" + dataId ;
       console.log("BoardName: " + boardname);
       var container = createContainer(elem, boardname);
-      var attrs = parseParameters(elem, boardname);
       attrs.boardname = boardname;
       attachWidget(container, attrs);
 
