@@ -1,106 +1,9 @@
 import { withPluginApi } from "discourse/lib/plugin-api";
-import PGNV from "../lib/dist";
-{/* <script src="../../pgn-viewer/lib/dist.js" type="text/discourse-plugin" version="0.8" ></script> */}
+import I18n from "I18n";
+import { getRegister } from "discourse-common/lib/get-owner";
+import WidgetGlue from "discourse/widgets/glue";
+
 // babel: { compact: true }
-
-/**
- #### place here the import of the actual viewer?
- #### import TinyTOTP from "../vendor/tiny-totp";
-
-
- ##What I want
- [wrap=discourse-pgn locale='it' pieceStyle='wikipedia']
- 1. f4 e6 2. g4 Qh4#
- [/wrap]
- **/
-function Parser(element) {
-    //## alternative for default values?
-    //const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'merida' };
-
-    //## read element dataset
-    const game = element.textContent;
-
-    // new feature!
-    const gameClean = cleanup_pgnv(game);
-
-    // NOTE: create all params with default
-    const id         = (element.dataset.id || 'board');
-    const pieceStyle = (element.dataset.pieceStyle || 'merida');
-
-    // alternative to have default + reading input
-    let locale = 'fr'
-    if ("locale" in element.dataset) {
-      // data attribute exist
-      locale = element.dataset.locale;
-    }
-
-    //...
-
-    //## do the print of read value param - OK!
-    // element.innerHTML = `<div><p><strong> element.textContent + ' ' + ${param} <\strong><\p></div>`;
-
-    //## do the print of dafault value id/locale/pieceStyle - OK!
-    //element.innerHTML = `<div><p><strong> ${game} + ' ' + ${pieceStyle} + ' ' + ${id} + ' ' + ${locale} + ${gameClean}<\strong><\p></div>`;
-    // <div> ${game} + ' ' + ${pieceStyle} + ' ' + ${id} + ' ' + ${locale} + ${gameClean}</div>;
-
-    // ## Now is missing the part reading inside the wrap tag and assign the values to game variable - OK!
-    // # game = element.textContent    ## ??
-
-
-    // NOTE: will add then pgnBoard, pgnPrint, pgnEdit. Each bbcode will invoke different mode.
-    // var mode = 'pgnView'
-
-    // final (1st try)?
-
-    // this should be result of configString()
-    // const parms = { "pgn": gameClean,
-    //                 "pieceStyle": pieceStyle
-    //               }
-    // const renderer = new PGNV.pgnView(id, parms);
-    // element.innerHTML = `<div class='pgn-code'>${renderer}</div>`;
-
-    // final (alt.)?
-    // element.innerHTML = `<div class='pgn-code'>PGNV.${mode}(${id}, {pgn: ${gameClean}, pieceStyle: ${pieceStyle}})</div>`;
-    // element.innerHTML = `<div class='pgn-code'>PGNV.pgnView(${id}, {pgn: ${gameClean}, pieceStyle: ${pieceStyle}})</div>`;
-
-    element.innerHTML = `<script type='text/javascript' id='pgn-code-board'>var game='${gameClean}'; PGN.pgnView('board',{pgn: game, pieceStyle: 'merida'});</script><div id="board" style="width: 400px"></div>`;
-
-    /**
-    ## example of final string:
-    ## var game = "1. f4 e6 2. g4 Qh4#";
-    ## PGNV.pgnView('board', {pgn: game, pieceStyle: 'merida'});
-
-
-    ## missing the div reference to external script? or just do import PGNV and invoke that here?
-    # PGNV.pgnView(${id}, {pgn: ${game}, .... });
-
-
-    ## NOTE: in the future different warp for different functions, e.g PGNV.pgnEdit and so on.
-    ##       then a single function will parse the correct code and invoke correct functions.
-    ## NOTE2: one of the next stps will be creation of BBcode that will do the wrapping by itself
-
-
-    ## dataset shall write HTML code like this:
-    # <div id="board" style="width: 400px"></div>
-
-
-
-    ## Note, the parameters can be either placed in <div xxx > or can be forwarded to pgnViewer directly
-    ## example:
-    ## let pgn = "1. e4 e5 2. Nf3 (2. f4 d5 3. exd5 e4) 2... Nc6 3. Bc4 Nf6";
-    ## const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'alpha' }
-    ## PGNV.pgnView('board1', { pgn: pgn});
-    ## PGNV.pgnView('board2', {pgn: pgn, locale: 'de'});
-    ## PGNV.pgnView('board3', {pgn: pgn, locale: 'en', pieceStyle: 'merida'});
-    ## PGNV.pgnView('board4', {pgn: pgn, width: '300px'});
-    ##
-    ## to create this HTML code:
-    ## <div id="board1"></div><div id="board2"></div><div id="board3"></div><div id="board4"></div>
-
-    ## NOTE: add the locales too (basic ones at least BUT NOT the gz!!!!)
-
-    **/
-}
 
 // Cleanup the content, so it will not have any errors. Known are
 // * line breaks ==> Spaces
@@ -198,12 +101,89 @@ function configString (element) {
 
 // ****** //
 
-function attachPgn(elem, helper) {
-  elem.querySelectorAll("div[data-wrap=discourse-pgn]").forEach(Parser);
+function parseParameters(element, boardname) {
+    //## alternative for default values?
+    //const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'merida' };
+
+    //## read element dataset
+    const game = element.textContent;
+
+    // new feature!
+    const gameClean = cleanup_pgnv(game);
+
+    // NOTE: create all params with default
+    const id         = (element.dataset.id || boardname);
+    const pieceStyle = (element.dataset.pieceStyle || 'merida');
+
+    console.log("Attrs: boardname = ", boardname);
+    console.log("Game: ", gameClean);
+
+    // TODO fill attrs with parameters found above.
+    // Use the parseParameters above?
+    return {
+      game: gameClean
+    };
 }
 
+function createContainer(elem, boardname) {
+  elem.innerHTML = "";
+  const placeholder = document.createElement("div");
+  placeholder.id = boardname;
+  elem.appendChild(placeholder);
+
+      console.log("Placeholder: " + placeholder.innerHTML);
+
+  return placeholder;
+  //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
+}
+
+
 function initialize(api) {
-  api.decorateCookedElement(attachPgn, { id: "discourse-pgn" });
+  let _glued = [];
+
+  function cleanUp() {
+    _glued.forEach(g => g.cleanUp());
+    _glued = [];
+  }
+
+  const register = getRegister(api);
+  function attachWidget(container, attrs) {
+    const glue = new WidgetGlue(
+      "pgnviewer-widget",
+      register,
+      attrs
+    );
+    glue.appendTo(container);
+    _glued.push(glue);
+  }
+
+  api.decorateCooked(($cooked, postWidget) => {
+    const nodes = $cooked[0].querySelectorAll(
+      "div[data-wrap=discourse-pgn]"
+    );
+
+
+    var dataId = 0;
+    if (postWidget) {
+      const postAttrs = postWidget.widget.attrs;
+      dataId = postAttrs.id;
+    };
+
+    var wcount = 0;
+    nodes.forEach((elem, dataId, wcount) => {
+      var attrs = parseParameters(elem, boardname);
+      var boardname = "board-" + dataId ;
+      console.log("BoardName: " + boardname);
+      var container = createContainer(elem, boardname);
+      attrs.boardname = boardname;
+      attachWidget(container, attrs);
+
+      wcount = wcount + 1;
+    });
+
+  }, { id: "discourse-pgn" });
+
+  api.cleanupStream(cleanUp);
 }
 
 export default {
