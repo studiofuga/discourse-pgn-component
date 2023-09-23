@@ -155,9 +155,9 @@ function initialize(api) {
     if (postWidget) {
       const postAttrs = postWidget.widget.attrs;
       dataId = postAttrs.id;
-    }
+    };
 
-    int wcount = 0;
+    var wcount = 0;
     placeholderNodes.forEach((elem, dataId, wcount) => {
       var boardname = "board-" + id + "-" + count;
       console.log("BoardName: " + boardname);

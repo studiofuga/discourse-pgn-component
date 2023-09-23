@@ -54,6 +54,6 @@ createWidget("pgnviewer-widget", {
           h("span.dice-input", renderDiceInput(attrs)),
         ]),
       ];
-    };
-  },*/
+    };*/
+  },
 });
