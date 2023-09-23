@@ -11,15 +11,19 @@ createWidget("pgnviewer-widget", {
   buildKey: (attrs) => `dice-result-${attrs.postId}-${attrs.rollId}`,
 
   html(attrs) {
-	console.log("Rendering attrs: ", attrs.boardname, attrs.game );
+	console.log("Rendering attrs: ", attrs.boardname, " game: ", attrs.game );
 
+    console.log("Render: ", attrs.boardname)
     var pgnwidget = PGNV.pgnView(attrs.boardname, {
       pgn: attrs.game,
       pieceStyle: 'merida'
     });
 
 	return [
-        h("div.pgn", { id: attrs.boardname }),
+        h("div.pgn", { 
+        	id: attrs.boardname, 
+        	style: "width: 400px"
+        }),
       ];
 
   	/*

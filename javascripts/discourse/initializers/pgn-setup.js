@@ -116,7 +116,8 @@ function parseParameters(element, boardname) {
     const pieceStyle = (element.dataset.pieceStyle || 'merida');
 
     console.log("Attrs: boardname = ", boardname);
-    console.log("Game: ", gameClean);
+    console.log("Game: ", game);
+    console.log("GameClean: ", gameClean);
 
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
@@ -131,7 +132,7 @@ function createContainer(elem, boardname) {
   placeholder.id = boardname;
   elem.appendChild(placeholder);
 
-      console.log("Placeholder: " + placeholder.innerHTML);
+  console.log("Placeholder: " + placeholder.innerHTML);
 
   return placeholder;
   //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
@@ -163,22 +164,27 @@ function initialize(api) {
     );
 
 
-    var dataId = 0;
+    let dataId = 0;
     if (postWidget) {
       const postAttrs = postWidget.widget.attrs;
       dataId = postAttrs.id;
+      console.log("postWidget.id: ", dataId);
     };
 
-    var wcount = 0;
+    let wcount = 1;
+
+    function generateBaseName(id) {
+      ++wcount;      
+      return "board-" + dataId + "-" + wcount;
+    }
+
     nodes.forEach((elem, dataId, wcount) => {
-      var attrs = parseParameters(elem, boardname);
-      var boardname = "board-" + dataId ;
+      let boardname = generateBaseName(dataId);
       console.log("BoardName: " + boardname);
+      var attrs = parseParameters(elem, boardname);
       var container = createContainer(elem, boardname);
       attrs.boardname = boardname;
       attachWidget(container, attrs);
-
-      wcount = wcount + 1;
     });
 
   }, { id: "discourse-pgn" });
