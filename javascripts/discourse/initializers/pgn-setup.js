@@ -1,7 +1,8 @@
 import { withPluginApi } from "discourse/lib/plugin-api";
 import I18n from "I18n";
-import { getRegister } from "discourse-common/lib/get-owner";
 import WidgetGlue from "discourse/widgets/glue";
+import { debounce } from "@ember/runloop";
+import "../lib/dist";
 
 // babel: { compact: true }
 
@@ -127,36 +128,29 @@ function parseParameters(element, boardname) {
 }
 
 function createContainer(elem, boardname) {
-  elem.innerHTML = "";
-  const placeholder = document.createElement("div");
-  placeholder.id = boardname;
-  elem.appendChild(placeholder);
+  elem.innerHTML = '<div id="' + boardname + '" style="width: 400px"></div>';
+  console.log("Placeholder: " + elem.innerHTML);
 
-  console.log("Placeholder: " + placeholder.innerHTML);
-
-  return placeholder;
+  return elem;
+  //return placeholder;
   //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
+}
+
+function renderPgn(attrs) {
+  console.log("renderPgn: ", attrs.boardname, " pgn: ", attrs.game);
+  let pgnwidget = PGNV.pgnView(attrs.boardname, {
+    pgn: attrs.game,
+    pieceStyle: 'merida'
+  });
 }
 
 
 function initialize(api) {
-  let _glued = [];
+  let debounceFunction = debounce;
 
-  function cleanUp() {
-    _glued.forEach(g => g.cleanUp());
-    _glued = [];
-  }
-
-  const register = getRegister(api);
-  function attachWidget(container, attrs) {
-    const glue = new WidgetGlue(
-      "pgnviewer-widget",
-      register,
-      attrs
-    );
-    glue.appendTo(container);
-    _glued.push(glue);
-  }
+  try {
+    debounceFunction = require("discourse-common/lib/debounce").default;
+  } catch (_) {}
 
   api.decorateCooked(($cooked, postWidget) => {
     const nodes = $cooked[0].querySelectorAll(
@@ -184,12 +178,11 @@ function initialize(api) {
       var attrs = parseParameters(elem, boardname);
       var container = createContainer(elem, boardname);
       attrs.boardname = boardname;
-      attachWidget(container, attrs);
+
+      debounceFunction(this, renderPgn, attrs, 200);
     });
 
   }, { id: "discourse-pgn" });
-
-  api.cleanupStream(cleanUp);
 }
 
 export default {

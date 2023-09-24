@@ -19,12 +19,7 @@ createWidget("pgnviewer-widget", {
       pieceStyle: 'merida'
     });
 
-	return [
-        h("div.pgn", { 
-        	id: attrs.boardname, 
-        	style: "width: 400px"
-        }),
-      ];
+	return [];
 
   	/*
     let errors = attrs.errors;
