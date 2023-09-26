@@ -136,21 +136,8 @@ function createContainer(elem, boardname) {
   //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
 }
 
-function renderPgn(attrs) {
-  console.log("renderPgn: ", attrs.boardname, " pgn: ", attrs.game);
-  let pgnwidget = PGNV.pgnView(attrs.boardname, {
-    pgn: attrs.game,
-    pieceStyle: 'merida'
-  });
-}
-
-
 function initialize(api) {
-  let debounceFunction = debounce;
-
-  try {
-    debounceFunction = require("discourse-common/lib/debounce").default;
-  } catch (_) {}
+  var pgnAttrs;
 
   api.decorateCooked(($cooked, postWidget) => {
     const nodes = $cooked[0].querySelectorAll(
@@ -178,11 +165,17 @@ function initialize(api) {
       var attrs = parseParameters(elem, boardname);
       var container = createContainer(elem, boardname);
       attrs.boardname = boardname;
-
-      debounceFunction(this, renderPgn, attrs, 200);
+      pgnAttrs = attrs;
     });
+  }, { id: "discourse-pgn"});
 
-  }, { id: "discourse-pgn" });
+  api.decorateCookedElement((element) => {
+    console.log("renderPgn: ", pgnAttrs.boardname, " pgn: ", pgnAttrs.game);
+    let pgnwidget = PGNV.pgnView(pgnAttrs.boardname, {
+      pgn: pgnAttrs.game,
+      pieceStyle: 'merida'
+    });
+  }, { id: "discourse-pgn-after", afterAdopt: true });
 }
 
 export default {
