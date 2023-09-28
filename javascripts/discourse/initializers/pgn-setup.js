@@ -127,29 +127,33 @@ function parseParameters(element, boardname) {
     };
 }
 
-function createContainer(elem, boardname) {
-  elem.innerHTML = '<div id="' + boardname + '" style="width: 400px"></div>';
-  console.log("Placeholder: " + elem.innerHTML);
 
-  return elem;
-  //return placeholder;
-  //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
+function populateNode(elem, boardname, game) {
+  console.log("Container: ", elem.innerHTML);
+
+  elem.innerHTML = "";
+  const pgndiv = document.createElement("div");
+  pgndiv.id = boardname;
+  pgndiv.className = "pgn";
+  elem.appendChild(pgndiv); 
+  
+  console.log("Populated node: " + elem.innerHTML);
 }
 
 function initialize(api) {
-  var pgnAttrs;
 
-  api.decorateCooked(($cooked, postWidget) => {
-    const nodes = $cooked[0].querySelectorAll(
+  api.decorateCookedElement((element, helper) => {
+    const nodes = element.querySelectorAll(
       "div[data-wrap=discourse-pgn]"
     );
 
+    if (nodes.length == 0) return;
 
     let dataId = 0;
-    if (postWidget) {
-      const postAttrs = postWidget.widget.attrs;
-      dataId = postAttrs.id;
-      console.log("postWidget.id: ", dataId);
+    if (helper) {
+      const postattr = helper.widget.attrs;
+      dataId = postattr.id;
+      console.log("post id: ", dataId);
     };
 
     let wcount = 1;
@@ -163,19 +167,16 @@ function initialize(api) {
       let boardname = generateBaseName(dataId);
       console.log("BoardName: " + boardname);
       var attrs = parseParameters(elem, boardname);
-      var container = createContainer(elem, boardname);
+      populateNode(elem, boardname);
       attrs.boardname = boardname;
-      pgnAttrs = attrs;
-    });
-  }, { id: "discourse-pgn"});
 
-  api.decorateCookedElement((element) => {
-    console.log("renderPgn: ", pgnAttrs.boardname, " pgn: ", pgnAttrs.game);
-    let pgnwidget = PGNV.pgnView(pgnAttrs.boardname, {
-      pgn: pgnAttrs.game,
-      pieceStyle: 'merida'
+      console.log("renderPgn: ", boardname, " pgn: ", attrs.game);
+      let pgnwidget = PGNV.pgnView(boardname, {
+        pgn: attrs.game,
+        pieceStyle: 'merida'
+      });
     });
-  }, { id: "discourse-pgn-after", afterAdopt: true });
+  }, { id: "discourse-pgn", afterAdopt: true });
 }
 
 export default {
