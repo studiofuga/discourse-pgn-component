@@ -1,3 +1,5 @@
+//import { renderSettled } from '@ember/renderer';
+import { later } from "@ember/runloop";
 import { withPluginApi } from "discourse/lib/plugin-api";
 import I18n from "I18n";
 import WidgetGlue from "discourse/widgets/glue";
@@ -123,46 +125,50 @@ function parseParameters(element, boardname) {
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
     return {
-      game: gameClean
+      game: gameClean,
+      id: id
     };
 }
 
-function createContainer(elem, boardname) {
-  elem.innerHTML = '<div id="' + boardname + '" style="width: 400px"></div>';
-  console.log("Placeholder: " + elem.innerHTML);
 
-  return elem;
-  //return placeholder;
-  //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
+function populateNode(elem, attrs) {
+  console.log("Container: ", elem.innerHTML);
+
+  elem.innerHTML = "";
+  const pgndiv = document.createElement("div");
+  pgndiv.id = attrs.id;
+  pgndiv.className = "pgn";
+  pgndiv.innerHTML = attrs.game;
+  elem.appendChild(pgndiv); 
+  
+  console.log("Populated node: " + elem.innerHTML);
 }
 
-function renderPgn(attrs) {
-  console.log("renderPgn: ", attrs.boardname, " pgn: ", attrs.game);
-  let pgnwidget = PGNV.pgnView(attrs.boardname, {
-    pgn: attrs.game,
-    pieceStyle: 'merida'
+async function renderPgn(elem) {
+  //await renderSettled();
+
+  later(() => {
+    let pgnwidget = PGNV.pgnView(elem.id, {
+      pgn: elem.innerHTML,
+      pieceStyle: 'merida'
+    }, 1500);
   });
 }
 
-
 function initialize(api) {
-  let debounceFunction = debounce;
 
-  try {
-    debounceFunction = require("discourse-common/lib/debounce").default;
-  } catch (_) {}
-
-  api.decorateCooked(($cooked, postWidget) => {
-    const nodes = $cooked[0].querySelectorAll(
+  api.decorateCookedElement((element, helper) => {
+    const nodes = element.querySelectorAll(
       "div[data-wrap=discourse-pgn]"
     );
 
+    if (nodes.length == 0) return;
 
     let dataId = 0;
-    if (postWidget) {
-      const postAttrs = postWidget.widget.attrs;
-      dataId = postAttrs.id;
-      console.log("postWidget.id: ", dataId);
+    if (helper) {
+      const postattr = helper.widget.attrs;
+      dataId = postattr.id;
+      console.log("post id: ", dataId);
     };
 
     let wcount = 1;
@@ -172,17 +178,34 @@ function initialize(api) {
       return "board-" + dataId + "-" + wcount;
     }
 
-    nodes.forEach((elem, dataId, wcount) => {
+    nodes.forEach((elem) => {
       let boardname = generateBaseName(dataId);
       console.log("BoardName: " + boardname);
       var attrs = parseParameters(elem, boardname);
-      var container = createContainer(elem, boardname);
-      attrs.boardname = boardname;
+      populateNode(elem, attrs);
+    });
+  }, { id: "discourse-pgn-populate"});
 
-      debounceFunction(this, renderPgn, attrs, 200);
+  api.decorateCookedElement((element, helper) => {
+    const nodes = element.querySelectorAll(
+      "div.pgn"
+    );
+
+    if (nodes.length == 0) {
+      console.log("No nodes to render");
+      return;
+    }
+
+    nodes.forEach((elem) => {
+      console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML);
+      renderPgn(elem);
     });
 
-  }, { id: "discourse-pgn" });
+  }, { id: "discourse-pgn-render", afterAdopt: true });
+
+  api.decorateWidget('post:after', (helper)=>{
+
+  });
 }
 
 export default {
