@@ -1,3 +1,5 @@
+//import { renderSettled } from '@ember/renderer';
+import { later } from "@ember/runloop";
 import { withPluginApi } from "discourse/lib/plugin-api";
 import I18n from "I18n";
 import WidgetGlue from "discourse/widgets/glue";
@@ -142,6 +144,17 @@ function populateNode(elem, attrs) {
   console.log("Populated node: " + elem.innerHTML);
 }
 
+async function renderPgn(elem) {
+  //await renderSettled();
+
+  later(() => {
+    let pgnwidget = PGNV.pgnView(elem.id, {
+      pgn: elem.innerHTML,
+      pieceStyle: 'merida'
+    }, 1500);
+  });
+}
+
 function initialize(api) {
 
   api.decorateCookedElement((element, helper) => {
@@ -185,13 +198,14 @@ function initialize(api) {
 
     nodes.forEach((elem) => {
       console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML);
-      let pgnwidget = PGNV.pgnView(elem.id, {
-        pgn: elem.innerHTML,
-        pieceStyle: 'merida'
-      });
+      renderPgn(elem);
     });
 
   }, { id: "discourse-pgn-render", afterAdopt: true });
+
+  api.decorateWidget('post:after', (helper)=>{
+
+  });
 }
 
 export default {
