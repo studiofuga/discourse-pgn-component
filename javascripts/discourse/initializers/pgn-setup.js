@@ -1,3 +1,5 @@
+//import { renderSettled } from '@ember/renderer';
+import { later } from "@ember/runloop";
 import { withPluginApi } from "discourse/lib/plugin-api";
 import I18n from "I18n";
 import WidgetGlue from "discourse/widgets/glue";
@@ -102,87 +104,127 @@ function configString (element) {
 
 // ****** //
 
-function parseParameters(element, boardname) {
-    //## alternative for default values?
-    //const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'merida' };
-
-    //## read element dataset
+function parseParameters(element) {
     const game = element.textContent;
-
-    // new feature!
     const gameClean = cleanup_pgnv(game);
 
-    // NOTE: create all params with default
-    const id         = (element.dataset.id || boardname);
     const pieceStyle = (element.dataset.pieceStyle || 'merida');
+    const theme = (element.dataset.theme || 'falken');
 
-    console.log("Attrs: boardname = ", boardname);
     console.log("Game: ", game);
     console.log("GameClean: ", gameClean);
 
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
     return {
-      game: gameClean
+      game: game,
+      pieceStyle: pieceStyle,
+      theme: theme
     };
 }
 
-function createContainer(elem, boardname) {
-  elem.innerHTML = '<div id="' + boardname + '" style="width: 400px"></div>';
-  console.log("Placeholder: " + elem.innerHTML);
+function populateNode(elem, attrs) {
+  console.log("Container: ", elem.innerHTML);
 
-  return elem;
-  //return placeholder;
-  //element.innerHTML = `<div id="board" style="width: 400px"></div>`;
+  elem.innerHTML = "";
+  const pgndiv = document.createElement("div");
+  pgndiv.id = attrs.id;
+  pgndiv.className = "pgn";
+  pgndiv.innerHTML = attrs.game;
+
+  pgndiv.pieceStyle = (attrs.pieceStyle || "uscf");
+  pgndiv.theme = (attrs.theme || "beier");
+
+  elem.appendChild(pgndiv); 
+  
+  console.log("Populated node: " + elem.innerHTML);
 }
 
-function renderPgn(attrs) {
-  console.log("renderPgn: ", attrs.boardname, " pgn: ", attrs.game);
-  let pgnwidget = PGNV.pgnView(attrs.boardname, {
-    pgn: attrs.game,
-    pieceStyle: 'merida'
+async function renderPgn(elem) {
+
+  later(() => {
+    console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML, " pieces: ");
+
+    let args = { pgn: elem.innerHTML};
+    args.pieceStyle = elem.pieceStyle;
+    args.theme = elem.theme;
+
+    let pgnwidget = PGNV.pgnView(elem.id, args);
   });
 }
 
+function generateBaseName(id, count) {
+  return "board-" + id + "-" + count;
+}
 
-function initialize(api) {
-  let debounceFunction = debounce;
-
-  try {
-    debounceFunction = require("discourse-common/lib/debounce").default;
-  } catch (_) {}
-
-  api.decorateCooked(($cooked, postWidget) => {
-    const nodes = $cooked[0].querySelectorAll(
+function prepareWrap(element, helper, dataId, wcount) {
+    const nodes = element.querySelectorAll(
       "div[data-wrap=discourse-pgn]"
     );
 
+    if (nodes.length == 0) return [];
 
+    nodes.forEach((elem)=> {
+      let id = generateBaseName(dataId, wcount);
+      console.log("Generate: ", dataId , " ", wcount , " -> ", id);
+      ++wcount;      
+
+      var attrs = parseParameters(elem);
+      attrs.id = id;
+      populateNode(elem, attrs);
+    });
+
+    return nodes;
+}
+
+function prepareCode(element,helper, dataId, wcount) {
+    const nodes = element.querySelectorAll("pre[data-code-wrap=pgn]");
+    if (nodes.length == 0) {
+      return [];
+    }
+
+    nodes.forEach((elem)=> {
+      let id = generateBaseName(dataId, wcount);
+      console.log("Generate: ", dataId , " ", wcount , " -> ", id);
+      ++wcount;      
+
+      var attrs = parseParameters(elem);
+      attrs.id = id;
+      populateNode(elem, attrs);
+    });
+
+    return nodes;    
+}
+
+function initialize(api) {
+
+  api.decorateCookedElement((element, helper) => {
     let dataId = 0;
-    if (postWidget) {
-      const postAttrs = postWidget.widget.attrs;
-      dataId = postAttrs.id;
-      console.log("postWidget.id: ", dataId);
+    if (helper) {
+      const postattr = helper.widget.attrs;
+      dataId = postattr.id;
+      console.log("post id: ", dataId);
     };
 
     let wcount = 1;
+    const wrapNodes = prepareWrap(element, helper, dataId, wcount);
+    const codeNodes = prepareCode(element, helper, dataId, wcount);
+  }, { id: "discourse-pgn-populate"});
 
-    function generateBaseName(id) {
-      ++wcount;      
-      return "board-" + dataId + "-" + wcount;
+  api.decorateCookedElement((element, helper) => {
+    const nodes = element.querySelectorAll(
+      "div.pgn"
+    );
+
+    if (nodes.length == 0) {
+      return;
     }
 
-    nodes.forEach((elem, dataId, wcount) => {
-      let boardname = generateBaseName(dataId);
-      console.log("BoardName: " + boardname);
-      var attrs = parseParameters(elem, boardname);
-      var container = createContainer(elem, boardname);
-      attrs.boardname = boardname;
-
-      debounceFunction(this, renderPgn, attrs, 200);
+    nodes.forEach((elem) => {
+      renderPgn(elem);
     });
 
-  }, { id: "discourse-pgn" });
+  }, { id: "discourse-pgn-render", afterAdopt: true });
 }
 
 export default {
