@@ -123,18 +123,20 @@ function parseParameters(element, boardname) {
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
     return {
-      game: gameClean
+      game: gameClean,
+      id: id
     };
 }
 
 
-function populateNode(elem, boardname, game) {
+function populateNode(elem, attrs) {
   console.log("Container: ", elem.innerHTML);
 
   elem.innerHTML = "";
   const pgndiv = document.createElement("div");
-  pgndiv.id = boardname;
+  pgndiv.id = attrs.id;
   pgndiv.className = "pgn";
+  pgndiv.innerHTML = attrs.game;
   elem.appendChild(pgndiv); 
   
   console.log("Populated node: " + elem.innerHTML);
@@ -163,20 +165,33 @@ function initialize(api) {
       return "board-" + dataId + "-" + wcount;
     }
 
-    nodes.forEach((elem, dataId, wcount) => {
+    nodes.forEach((elem) => {
       let boardname = generateBaseName(dataId);
       console.log("BoardName: " + boardname);
       var attrs = parseParameters(elem, boardname);
-      populateNode(elem, boardname);
-      attrs.boardname = boardname;
+      populateNode(elem, attrs);
+    });
+  }, { id: "discourse-pgn-populate"});
 
-      console.log("renderPgn: ", boardname, " pgn: ", attrs.game);
-      let pgnwidget = PGNV.pgnView(boardname, {
-        pgn: attrs.game,
+  api.decorateCookedElement((element, helper) => {
+    const nodes = element.querySelectorAll(
+      "div.pgn"
+    );
+
+    if (nodes.length == 0) {
+      console.log("No nodes to render");
+      return;
+    }
+
+    nodes.forEach((elem) => {
+      console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML);
+      let pgnwidget = PGNV.pgnView(elem.id, {
+        pgn: elem.innerHTML,
         pieceStyle: 'merida'
       });
     });
-  }, { id: "discourse-pgn", afterAdopt: true });
+
+  }, { id: "discourse-pgn-render", afterAdopt: true });
 }
 
 export default {
