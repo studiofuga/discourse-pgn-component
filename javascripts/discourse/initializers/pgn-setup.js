@@ -68,6 +68,7 @@ async function renderPgn(elem) {
     let args = { pgn: elem.innerHTML};
     args.pieceStyle = (config.pieceStyle || settings.piece_style);
     args.theme = (config.theme || settings.theme);
+    args.locale = (config.locale || settings.locale);
 
     let innerCoords = settings.inner_coords;
 
