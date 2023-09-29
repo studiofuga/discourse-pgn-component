@@ -37,19 +37,22 @@ function parseParameters(element) {
 
     const pieceStyle = (config.pieceStyle || settings.piece_style);
     const theme = (config.theme || settings.theme);
+    let innerCoords = settings.inner_coords;
 
-    console.log("Game: ", game);
-    console.log("Theme: ", theme);
+    if (typeof config.innerCoords !== 'undefined') {
+      innerCoords = true;
+    }
 
     return {
       game: game,
       pieceStyle: pieceStyle,
-      theme: theme
+      theme: theme,
+      innerCoords: innerCoords
     };
 }
 
 function populateNode(elem, attrs) {
-  console.log("Container: ", elem.innerHTML);
+  //console.log("Container: ", elem.innerHTML);
 
   elem.innerHTML = "";
   const pgndiv = document.createElement("div");
@@ -60,9 +63,13 @@ function populateNode(elem, attrs) {
   pgndiv.pieceStyle = (attrs.pieceStyle || "uscf");
   pgndiv.theme = (attrs.theme || "beier");
 
+  if (attrs.innerCoords) {
+    pgndiv.innerCoords = true;
+  }
+
   elem.appendChild(pgndiv); 
   
-  console.log("Populated node: " + elem.innerHTML);
+  //console.log("Populated node: " + elem.innerHTML);
 }
 
 async function renderPgn(elem) {
@@ -73,6 +80,10 @@ async function renderPgn(elem) {
     let args = { pgn: elem.innerHTML};
     args.pieceStyle = elem.pieceStyle;
     args.theme = elem.theme;
+
+    if (!elem.innerCoords) {
+      args.coordsInner = false;
+    }
 
     let pgnwidget = PGNV.pgnView(elem.id, args);
   });

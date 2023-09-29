@@ -23,3 +23,6 @@ piece_style:
     - maya
     - leipzig
 
+inner_coords:
+  default: false
+  type: bool
