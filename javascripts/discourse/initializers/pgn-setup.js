@@ -62,13 +62,16 @@ async function renderPgn(elem) {
 
     const config = parseConfig(elem.config);
 
-    //console.log("Parsed config: ", config);
+    //console.log("Config: ", elem.config, "Parsed:", config);
     //console.log("Settings: ", settings);
 
     let args = { pgn: elem.innerHTML};
     args.pieceStyle = (config.pieceStyle || settings.piece_style);
     args.theme = (config.theme || settings.theme);
     args.locale = (config.locale || settings.locale);
+
+    if (typeof config.orientation !== 'undefined')
+      args.orientation = config.orientation;
 
     let innerCoords = settings.inner_coords;
 
