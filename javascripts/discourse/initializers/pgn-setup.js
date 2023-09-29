@@ -104,7 +104,7 @@ function configString (element) {
 
 // ****** //
 
-function parseParameters(element, boardname) {
+function parseParameters(element) {
     //## alternative for default values?
     //const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'merida' };
 
@@ -115,21 +115,17 @@ function parseParameters(element, boardname) {
     const gameClean = cleanup_pgnv(game);
 
     // NOTE: create all params with default
-    const id         = (element.dataset.id || boardname);
     const pieceStyle = (element.dataset.pieceStyle || 'merida');
 
-    console.log("Attrs: boardname = ", boardname);
     console.log("Game: ", game);
     console.log("GameClean: ", gameClean);
 
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
     return {
-      game: gameClean,
-      id: id
+      game: gameClean
     };
 }
-
 
 function populateNode(elem, attrs) {
   console.log("Container: ", elem.innerHTML);
@@ -148,6 +144,7 @@ async function renderPgn(elem) {
   //await renderSettled();
 
   later(() => {
+    console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML);
     let pgnwidget = PGNV.pgnView(elem.id, {
       pgn: elem.innerHTML,
       pieceStyle: 'merida'
@@ -155,14 +152,29 @@ async function renderPgn(elem) {
   });
 }
 
-function initialize(api) {
+function generateBaseName(id, count) {
+  return "board-" + id + "-" + count;
+}
 
-  api.decorateCookedElement((element, helper) => {
+function prepareWrap(element, helper) {
     const nodes = element.querySelectorAll(
       "div[data-wrap=discourse-pgn]"
     );
 
-    if (nodes.length == 0) return;
+    if (nodes.length == 0) return [];
+
+    nodes.forEach((elem)=> {
+      var attrs = parseParameters(elem);
+      populateNode(elem, attrs);
+    });
+
+    return nodes;
+}
+
+function initialize(api) {
+
+  api.decorateCookedElement((element, helper) => {
+    const nodes = prepareWrap(element, helper);
 
     let dataId = 0;
     if (helper) {
@@ -172,17 +184,9 @@ function initialize(api) {
     };
 
     let wcount = 1;
-
-    function generateBaseName(id) {
-      ++wcount;      
-      return "board-" + dataId + "-" + wcount;
-    }
-
     nodes.forEach((elem) => {
-      let boardname = generateBaseName(dataId);
-      console.log("BoardName: " + boardname);
-      var attrs = parseParameters(elem, boardname);
-      populateNode(elem, attrs);
+      elem.id = generateBaseName(dataId, wcount);
+      ++wcount;      
     });
   }, { id: "discourse-pgn-populate"});
 
@@ -197,15 +201,10 @@ function initialize(api) {
     }
 
     nodes.forEach((elem) => {
-      console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML);
       renderPgn(elem);
     });
 
   }, { id: "discourse-pgn-render", afterAdopt: true });
-
-  api.decorateWidget('post:after', (helper)=>{
-
-  });
 }
 
 export default {
