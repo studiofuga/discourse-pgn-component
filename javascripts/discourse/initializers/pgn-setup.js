@@ -135,20 +135,25 @@ function populateNode(elem, attrs) {
   pgndiv.id = attrs.id;
   pgndiv.className = "pgn";
   pgndiv.innerHTML = attrs.game;
+
+  pgndiv.pieceStyle = "uscf";
+  pgndiv.theme = "beier";
+
   elem.appendChild(pgndiv); 
   
   console.log("Populated node: " + elem.innerHTML);
 }
 
 async function renderPgn(elem) {
-  //await renderSettled();
 
   later(() => {
-    console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML);
-    let pgnwidget = PGNV.pgnView(elem.id, {
-      pgn: elem.innerHTML,
-      pieceStyle: 'merida'
-    }, 1500);
+    console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML, " pieces: ");
+
+    let args = { pgn: elem.innerHTML};
+    args.pieceStyle = elem.pieceStyle;
+    args.theme = elem.theme;
+
+    let pgnwidget = PGNV.pgnView(elem.id, args);
   });
 }
 
