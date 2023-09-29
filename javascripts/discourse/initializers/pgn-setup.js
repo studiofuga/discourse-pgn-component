@@ -133,8 +133,8 @@ function parseParameters(element) {
     const game = element.textContent;
     const config = parseConfig(element.dataset.codeConfig);
 
-    const pieceStyle = (config.pieceStyle || 'merida');
-    const theme = (config.theme || 'falken');
+    const pieceStyle = (config.pieceStyle || settings.piece_style);
+    const theme = (config.theme || settings.theme);
 
     console.log("Game: ", game);
     console.log("Theme: ", theme);
