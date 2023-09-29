@@ -117,7 +117,7 @@ function parseParameters(element) {
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
     return {
-      game: gameClean,
+      game: game,
       pieceStyle: pieceStyle,
       theme: theme
     };
