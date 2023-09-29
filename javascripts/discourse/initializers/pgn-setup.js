@@ -33,21 +33,10 @@ function parseConfig(configString) {
 
 function parseParameters(element) {
     const game = element.textContent;
-    const config = parseConfig(element.dataset.codeConfig);
-
-    const pieceStyle = (config.pieceStyle || settings.piece_style);
-    const theme = (config.theme || settings.theme);
-    let innerCoords = settings.inner_coords;
-
-    if (typeof config.innerCoords !== 'undefined') {
-      innerCoords = true;
-    }
 
     return {
       game: game,
-      pieceStyle: pieceStyle,
-      theme: theme,
-      innerCoords: innerCoords
+      config: element.dataset.codeConfig
     };
 }
 
@@ -59,13 +48,7 @@ function populateNode(elem, attrs) {
   pgndiv.id = attrs.id;
   pgndiv.className = "pgn";
   pgndiv.innerHTML = attrs.game;
-
-  pgndiv.pieceStyle = (attrs.pieceStyle || "uscf");
-  pgndiv.theme = (attrs.theme || "beier");
-
-  if (attrs.innerCoords) {
-    pgndiv.innerCoords = true;
-  }
+  pgndiv.config = attrs.config;
 
   elem.appendChild(pgndiv); 
   
@@ -75,15 +58,26 @@ function populateNode(elem, attrs) {
 async function renderPgn(elem) {
 
   later(() => {
-    console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML, " theme: ", elem.theme);
+    //console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML, " config: ", elem.config);
+
+    const config = parseConfig(elem.config);
+
+    //console.log("Parsed config: ", config);
+    //console.log("Settings: ", settings);
 
     let args = { pgn: elem.innerHTML};
-    args.pieceStyle = elem.pieceStyle;
-    args.theme = elem.theme;
+    args.pieceStyle = (config.pieceStyle || settings.piece_style);
+    args.theme = (config.theme || settings.theme);
 
-    if (!elem.innerCoords) {
-      args.coordsInner = false;
+    let innerCoords = settings.inner_coords;
+
+    if (typeof config.innerCoords !== 'undefined') {
+      args.coordsInner = true;
+    } else {
+      args.coordsInner = settings.inner_coords;
     }
+
+    //console.log("attrs: ", args);
 
     let pgnwidget = PGNV.pgnView(elem.id, args);
   });
