@@ -45,6 +45,10 @@ locale:
     - ro
     - sv
 
+marker:
+  default: true
+  type: bool
+  
 inner_coords:
   default: false
   type: bool

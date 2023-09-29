@@ -81,6 +81,10 @@ async function renderPgn(elem) {
       args.coordsInner = settings.inner_coords;
     }
 
+    if (settings.marker) {
+      args.colorMarker = "circle";
+    }
+
     //console.log("attrs: ", args);
 
     let pgnwidget = PGNV.pgnView(elem.id, args);
