@@ -23,3 +23,32 @@ piece_style:
     - maya
     - leipzig
 
+locale:
+  default: en
+  type: enum
+  choices:
+    - cs
+    - da
+    - de
+    - en
+    - es
+    - et
+    - fi
+    - fr
+    - hu
+    - is
+    - it
+    - nb
+    - nl
+    - pl
+    - pt
+    - ro
+    - sv
+
+marker:
+  default: true
+  type: bool
+  
+inner_coords:
+  default: false
+  type: bool
