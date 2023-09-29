@@ -1,4 +1,3 @@
-//import { renderSettled } from '@ember/renderer';
 import { later } from "@ember/runloop";
 import { withPluginApi } from "discourse/lib/plugin-api";
 import I18n from "I18n";
@@ -104,18 +103,42 @@ function configString (element) {
 
 // ****** //
 
+function dashToCamel(str) {
+  let parts = str.split("-");
+
+  for (let i = 1; i < parts.length; i++) {
+    parts[i] = parts[i][0].toUpperCase() + parts[i].slice(1);
+  }
+  return parts.join("");
+}
+
+function parseConfig(configString) {
+  if (typeof configString === 'undefined')
+    return {};
+
+  let entries = configString.split(';');
+  let config = {};
+  entries.forEach((entry) => {
+    try {
+      let kv = entry.split(':');
+      config[dashToCamel(kv[0])] = kv[1];
+    } catch (error) {
+      console.log("Ignoring malformed entry: ", entry);
+    }
+  });
+  return config;
+}
+
 function parseParameters(element) {
     const game = element.textContent;
-    const gameClean = cleanup_pgnv(game);
+    const config = parseConfig(element.dataset.codeConfig);
 
-    const pieceStyle = (element.dataset.pieceStyle || 'merida');
-    const theme = (element.dataset.theme || 'falken');
+    const pieceStyle = (config.pieceStyle || settings.piece_style);
+    const theme = (config.theme || settings.theme);
 
     console.log("Game: ", game);
-    console.log("GameClean: ", gameClean);
+    console.log("Theme: ", theme);
 
-    // TODO fill attrs with parameters found above.
-    // Use the parseParameters above?
     return {
       game: game,
       pieceStyle: pieceStyle,
@@ -143,7 +166,7 @@ function populateNode(elem, attrs) {
 async function renderPgn(elem) {
 
   later(() => {
-    console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML, " pieces: ");
+    console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML, " theme: ", elem.theme);
 
     let args = { pgn: elem.innerHTML};
     args.pieceStyle = elem.pieceStyle;
@@ -166,7 +189,7 @@ function prepareWrap(element, helper, dataId, wcount) {
 
     nodes.forEach((elem)=> {
       let id = generateBaseName(dataId, wcount);
-      console.log("Generate: ", dataId , " ", wcount , " -> ", id);
+      //console.log("Generate: ", dataId , " ", wcount , " -> ", id);
       ++wcount;      
 
       var attrs = parseParameters(elem);
@@ -185,7 +208,7 @@ function prepareCode(element,helper, dataId, wcount) {
 
     nodes.forEach((elem)=> {
       let id = generateBaseName(dataId, wcount);
-      console.log("Generate: ", dataId , " ", wcount , " -> ", id);
+      //console.log("Generate: ", dataId , " ", wcount , " -> ", id);
       ++wcount;      
 
       var attrs = parseParameters(elem);

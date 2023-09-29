@@ -1,3 +1,15 @@
+theme:
+  default: normal
+  type: enum
+  choices:
+    - green 
+    - zeit 
+    - informator
+    - sportverlag
+    - beyer
+    - falken
+    - blue
+
 piece_style:
   default: merida
   type: enum
