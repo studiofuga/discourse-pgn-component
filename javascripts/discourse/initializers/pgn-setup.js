@@ -105,17 +105,11 @@ function configString (element) {
 // ****** //
 
 function parseParameters(element) {
-    //## alternative for default values?
-    //const PgnBaseDefaults = { locale: 'fr', width: '400px', pieceStyle: 'merida' };
-
-    //## read element dataset
     const game = element.textContent;
-
-    // new feature!
     const gameClean = cleanup_pgnv(game);
 
-    // NOTE: create all params with default
     const pieceStyle = (element.dataset.pieceStyle || 'merida');
+    const theme = (element.dataset.theme || 'falken');
 
     console.log("Game: ", game);
     console.log("GameClean: ", gameClean);
@@ -123,7 +117,9 @@ function parseParameters(element) {
     // TODO fill attrs with parameters found above.
     // Use the parseParameters above?
     return {
-      game: gameClean
+      game: gameClean,
+      pieceStyle: pieceStyle,
+      theme: theme
     };
 }
 
@@ -136,8 +132,8 @@ function populateNode(elem, attrs) {
   pgndiv.className = "pgn";
   pgndiv.innerHTML = attrs.game;
 
-  pgndiv.pieceStyle = "uscf";
-  pgndiv.theme = "beier";
+  pgndiv.pieceStyle = (attrs.pieceStyle || "uscf");
+  pgndiv.theme = (attrs.theme || "beier");
 
   elem.appendChild(pgndiv); 
   
@@ -161,7 +157,7 @@ function generateBaseName(id, count) {
   return "board-" + id + "-" + count;
 }
 
-function prepareWrap(element, helper) {
+function prepareWrap(element, helper, dataId, wcount) {
     const nodes = element.querySelectorAll(
       "div[data-wrap=discourse-pgn]"
     );
@@ -169,18 +165,40 @@ function prepareWrap(element, helper) {
     if (nodes.length == 0) return [];
 
     nodes.forEach((elem)=> {
+      let id = generateBaseName(dataId, wcount);
+      console.log("Generate: ", dataId , " ", wcount , " -> ", id);
+      ++wcount;      
+
       var attrs = parseParameters(elem);
+      attrs.id = id;
       populateNode(elem, attrs);
     });
 
     return nodes;
 }
 
+function prepareCode(element,helper, dataId, wcount) {
+    const nodes = element.querySelectorAll("pre[data-code-wrap=pgn]");
+    if (nodes.length == 0) {
+      return [];
+    }
+
+    nodes.forEach((elem)=> {
+      let id = generateBaseName(dataId, wcount);
+      console.log("Generate: ", dataId , " ", wcount , " -> ", id);
+      ++wcount;      
+
+      var attrs = parseParameters(elem);
+      attrs.id = id;
+      populateNode(elem, attrs);
+    });
+
+    return nodes;    
+}
+
 function initialize(api) {
 
   api.decorateCookedElement((element, helper) => {
-    const nodes = prepareWrap(element, helper);
-
     let dataId = 0;
     if (helper) {
       const postattr = helper.widget.attrs;
@@ -189,10 +207,8 @@ function initialize(api) {
     };
 
     let wcount = 1;
-    nodes.forEach((elem) => {
-      elem.id = generateBaseName(dataId, wcount);
-      ++wcount;      
-    });
+    const wrapNodes = prepareWrap(element, helper, dataId, wcount);
+    const codeNodes = prepareCode(element, helper, dataId, wcount);
   }, { id: "discourse-pgn-populate"});
 
   api.decorateCookedElement((element, helper) => {
@@ -201,7 +217,6 @@ function initialize(api) {
     );
 
     if (nodes.length == 0) {
-      console.log("No nodes to render");
       return;
     }
 
