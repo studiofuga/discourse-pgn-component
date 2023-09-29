@@ -20,3 +20,21 @@ For example:
     1. e4 e5 2. Nf3 Nc6
     ```
 
+### Block parameters
+
+The component can be configured on a per-block bases. A single parameter `config` can be specified in the pgn code block, with a strict format.
+
+The config string is a set of key/value pairs separated by ";". Key and Values are separated by ":".
+
+The following keys are recognized:
+
+- `theme`: the theme for chessboard to use. It can be one on the following list: green, zeit, informator, sportverlag, beyer, falken, blue
+
+- `piece-style`: The style for the pieces. It can be one between: merida, case, wikipedia, alpha, uscf, condal, maya, leipzig
+
+- `locale`: the locale for the moves, translated by the component.
+
+- `orientation`: to rotate the board and set the black pieces on the bottom, set it to `black`, or `white` to have non rotated board.
+
+See the PgnViewerJS site for further information.
+
