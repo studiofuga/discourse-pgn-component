@@ -14,6 +14,12 @@ function dashToCamel(str) {
   return parts.join("");
 }
 
+function isFenString(str) {
+  const fenRegex = new RegExp("([^/]+\\/){5}.+");
+
+  return fenRegex.test(str);
+}
+
 function parseConfig(configString) {
   if (typeof configString === 'undefined')
     return {};
@@ -58,6 +64,8 @@ function populateNode(elem, attrs) {
 async function renderPgn(elem) {
 
   later(() => {
+    let boardOnly = false;
+
     //console.log("renderPgn: ", elem.id, " pgn: ", elem.innerHTML, " config: ", elem.config);
 
     const config = parseConfig(elem.config);
@@ -65,7 +73,15 @@ async function renderPgn(elem) {
     //console.log("Config: ", elem.config, "Parsed:", config);
     //console.log("Settings: ", settings);
 
-    let args = { pgn: elem.innerHTML};
+    let args = { };
+
+    if (isFenString(elem.innerHTML)) {
+      args.position = elem.innerHTML;
+      boardOnly = true;
+    } else {
+      args.pgn = elem.innerHTML;
+    }
+
     args.pieceStyle = (config.pieceStyle || settings.piece_style);
     args.theme = (config.theme || settings.theme);
     args.locale = (config.locale || settings.locale);
@@ -85,9 +101,9 @@ async function renderPgn(elem) {
       args.colorMarker = "circle";
     }
 
-    //console.log("attrs: ", args);
+    console.log("attrs: ", args);
 
-    let pgnwidget = PGNV.pgnView(elem.id, args);
+    let pgnwidget = boardOnly ? PGNV.pgnBoard(elem.id, args) : PGNV.pgnView(elem.id, args);
   });
 }
 
