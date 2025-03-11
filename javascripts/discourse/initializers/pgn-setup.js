@@ -111,7 +111,7 @@ function generateBaseName(id, count) {
   return "board-" + id + "-" + count;
 }
 
-function prepareWrap(element, helper, dataId, wcount) {
+function prepareWrap(element, helper, dataId) {
     const nodes = element.querySelectorAll(
       "div[data-wrap=discourse-pgn]"
     );
@@ -119,9 +119,7 @@ function prepareWrap(element, helper, dataId, wcount) {
     if (nodes.length == 0) return [];
 
     nodes.forEach((elem)=> {
-      let id = generateBaseName(dataId, wcount);
-      //console.log("Generate: ", dataId , " ", wcount , " -> ", id);
-      ++wcount;      
+      let id = generateBaseName(dataId);
 
       var attrs = parseParameters(elem);
       attrs.id = id;
@@ -131,16 +129,14 @@ function prepareWrap(element, helper, dataId, wcount) {
     return nodes;
 }
 
-function prepareCode(element,helper, dataId, wcount) {
+function prepareCode(element,helper, dataId) {
     const nodes = element.querySelectorAll("pre[data-code-wrap=pgn]");
     if (nodes.length == 0) {
       return [];
     }
 
     nodes.forEach((elem)=> {
-      let id = generateBaseName(dataId, wcount);
-      //console.log("Generate: ", dataId , " ", wcount , " -> ", id);
-      ++wcount;      
+      let id = generateBaseName(dataId);
 
       var attrs = parseParameters(elem);
       attrs.id = id;
@@ -154,15 +150,16 @@ function initialize(api) {
 
   api.decorateCookedElement((element, helper) => {
     let dataId = 0;
-    if (helper) {
+    if (helper && helper.widget && helper.attrs) {
       const postattr = helper.widget.attrs;
       dataId = postattr.id;
       console.log("post id: ", dataId);
-    };
+    } else {
+      return;
+    }
 
-    let wcount = 1;
-    const wrapNodes = prepareWrap(element, helper, dataId, wcount);
-    const codeNodes = prepareCode(element, helper, dataId, wcount);
+    const wrapNodes = prepareWrap(element, helper, dataId);
+    const codeNodes = prepareCode(element, helper, dataId);
   }, { id: "discourse-pgn-populate"});
 
   api.decorateCookedElement((element, helper) => {

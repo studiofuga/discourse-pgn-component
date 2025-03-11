@@ -2,7 +2,7 @@
 
 Adds an interactive chessboard that can displays PGN files.
 
-It's based on [PgnViewerJS](https://mliebelt.github.io/PgnViewerJS/), a JavaScript component that can display PGNs on webpages.
+It's based on [PgnViewer](https://github.com/mliebelt/pgn-viewer), a JavaScript component that can display PGNs on webpages.
 
 ### Installation
 
@@ -36,5 +36,5 @@ The following keys are recognized:
 
 - `orientation`: to rotate the board and set the black pieces on the bottom, set it to `black`, or `white` to have non rotated board.
 
-See the PgnViewerJS site for further information.
+See the PgnViewer site for further information.
 
