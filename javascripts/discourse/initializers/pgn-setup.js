@@ -116,7 +116,7 @@ function prepareWrap(element, helper, dataId) {
       "div[data-wrap=discourse-pgn]"
     );
 
-    if (nodes.length == 0) return [];
+    if (nodes.length === 0) return [];
 
     nodes.forEach((elem)=> {
       let id = generateBaseName(dataId);
@@ -131,7 +131,7 @@ function prepareWrap(element, helper, dataId) {
 
 function prepareCode(element,helper, dataId) {
     const nodes = element.querySelectorAll("pre[data-code-wrap=pgn]");
-    if (nodes.length == 0) {
+    if (nodes.length === 0) {
       return [];
     }
 
@@ -150,12 +150,10 @@ function initialize(api) {
 
   api.decorateCookedElement((element, helper) => {
     let dataId = 0;
-    if (helper && helper.widget && helper.attrs) {
+    if (helper && helper.widget && helper.widget.attrs) {
       const postattr = helper.widget.attrs;
       dataId = postattr.id;
       console.log("post id: ", dataId);
-    } else {
-      return;
     }
 
     const wrapNodes = prepareWrap(element, helper, dataId);
@@ -167,7 +165,7 @@ function initialize(api) {
       "div.pgn"
     );
 
-    if (nodes.length == 0) {
+    if (nodes.length === 0) {
       return;
     }
 

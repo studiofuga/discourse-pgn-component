@@ -2,7 +2,7 @@
 
 Adds an interactive chessboard that can displays PGN files.
 
-It's based on [PgnViewer](https://github.com/mliebelt/pgn-viewer), a JavaScript component that can display PGNs on webpages.
+It's based on [<!--PgnViewer-->](https://github.com/mliebelt/pgn-viewer), a JavaScript component that can display PGNs on webpages.
 
 ### Installation
 
