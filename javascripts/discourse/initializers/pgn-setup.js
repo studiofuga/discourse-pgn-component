@@ -54,16 +54,25 @@ function prepareAndReplace(element, dataId) {
 }
 
 function renderPgn(elem) {
+  // Cattura il contenuto prima di schedulare, per sicurezza contro mutazioni DOM
+  const content = elem.textContent;
+  const configData = elem.dataset.config;
+
+  elem.dataset.rendered = "true";
+
   later(() => {
+    // Verifica che l'elemento sia ancora nel DOM
+    if (!document.getElementById(elem.id)) return;
+
     let boardOnly = false;
-    const config = parseConfig(elem.dataset.config);
+    const config = parseConfig(configData);
     let args = {};
 
-    if (isFenString(elem.textContent)) {
-      args.position = elem.textContent;
+    if (isFenString(content)) {
+      args.position = content;
       boardOnly = true;
     } else {
-      args.pgn = elem.textContent;
+      args.pgn = content;
     }
 
     args.pieceStyle = config.pieceStyle || settings.piece_style;
@@ -86,19 +95,25 @@ function renderPgn(elem) {
 }
 
 function initialize(api) {
-  // Uniamo la preparazione e il rendering in un unico decoratore `afterAdopt`
-  // per garantire che il DOM sia stabile e pronto.
-  api.decorateCookedElement((element, post) => {
-    if (!post) return;
+  api.decorateCookedElement((element, helper) => {
+    if (!helper) return;
+
+    // Estrai il post ID in modo compatibile con Glimmer e Widget API
+    let dataId;
+    if (helper.getModel) {
+      dataId = helper.getModel()?.id;
+    }
+    if (!dataId && helper.widget?.attrs) {
+      dataId = helper.widget.attrs.id;
+    }
+    if (!dataId) return;
 
     // 1. Trasforma i blocchi <pre> in <div class="pgn">
-    prepareAndReplace(element, post.id);
+    prepareAndReplace(element, dataId);
 
-    // 2. Cerca i nuovi <div class="pgn"> e li renderizza
-    const nodes = element.querySelectorAll("div.pgn");
-    if (nodes.length > 0) {
-      nodes.forEach(renderPgn);
-    }
+    // 2. Renderizza solo i div non ancora processati
+    const nodes = element.querySelectorAll('div.pgn:not([data-rendered])');
+    nodes.forEach(renderPgn);
   }, { id: "discourse-pgn-component", afterAdopt: true });
 }
 
