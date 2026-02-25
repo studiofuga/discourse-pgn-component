@@ -95,17 +95,14 @@ function renderPgn(elem) {
 }
 
 function initialize(api) {
-  api.decorateCookedElement((element, helper) => {
-    if (!helper) return;
+  api.decorateCookedElement((element, decoratorHelper) => {
+    if (!decoratorHelper) return;
 
-    // Estrai il post ID in modo compatibile con Glimmer e Widget API
-    let dataId;
-    if (helper.getModel) {
-      dataId = helper.getModel()?.id;
-    }
-    if (!dataId && helper.widget?.attrs) {
-      dataId = helper.widget.attrs.id;
-    }
+    // Nuova Glimmer API: il post è in decoratorHelper.post
+    // Fallback Widget API: decoratorHelper.widget.attrs
+    const post = decoratorHelper.post;
+    const dataId = post?.id
+      || decoratorHelper.widget?.attrs?.id;
     if (!dataId) return;
 
     // 1. Trasforma i blocchi <pre> in <div class="pgn">
@@ -114,7 +111,7 @@ function initialize(api) {
     // 2. Renderizza solo i div non ancora processati
     const nodes = element.querySelectorAll('div.pgn:not([data-rendered])');
     nodes.forEach(renderPgn);
-  }, { id: "discourse-pgn-component", afterAdopt: true });
+  }, { id: "discourse-pgn-component", onlyStream: true });
 }
 
 export default {
