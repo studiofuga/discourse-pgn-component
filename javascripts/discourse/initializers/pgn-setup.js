@@ -98,11 +98,8 @@ function initialize(api) {
   api.decorateCookedElement((element, decoratorHelper) => {
     if (!decoratorHelper) return;
 
-    // Nuova Glimmer API: il post è in decoratorHelper.post
-    // Fallback Widget API: decoratorHelper.widget.attrs
-    const post = decoratorHelper.post;
-    const dataId = post?.id
-      || decoratorHelper.widget?.attrs?.id;
+    const post = decoratorHelper.getModel();
+    const dataId = post?.id;
     if (!dataId) return;
 
     // 1. Trasforma i blocchi <pre> in <div class="pgn">
